@@ -3,5 +3,5 @@ data
 dataset
 models
 *.json
-*/!annotation_example.json
-*/!predictions_example.json
+!*/annotation_example.json
+!*/predictions_example.json
