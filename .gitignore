@@ -1,0 +1,7 @@
+__pycache__
+data
+dataset
+models
+*.json
+*/!annotation_example.json
+*/!predictions_example.json
