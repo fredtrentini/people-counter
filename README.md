@@ -48,5 +48,5 @@ pip install -r requirements.txt
 
 - First of all download some video files and move them to `data` folder.
 - Run `plot.py` to build dataset, build dataset annotations and generate initial predictions, as well as visualize those predictions.
-- Create a task on cvat and import the annotations to visualize the predicted bounding boxes and manually optimize them as much as needed.
+- Create a task on [cvat](https://app.cvat.ai) and import the annotations to visualize the predicted bounding boxes and manually optimize them as much as needed.
 - Download the updated annotations and run `merge_cvat_annotations.py` passing the original annotations and the downloaded annotations as arguments.
