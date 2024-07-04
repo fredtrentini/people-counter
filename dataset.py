@@ -179,30 +179,25 @@ class Dataset:
         train_count = int(img_count * TRAIN_RATIO)
 
         def preprocess_img(img_path, labels):
-            # from IPython import embed
-            # embed()
-            # exit()
-            
             img = tf.io.read_file(img_path)
             img = tf.io.decode_jpeg(img, channels=3)
             img = tf.image.resize(img, IMG_RESIZE)
-
-            return img, labels
+            
+            return (img, labels)
 
         dataset = tf.data.Dataset\
         .from_tensor_slices((img_paths, labels))\
-        .shuffle(buffer_size=img_count)\
+        .shuffle(buffer_size=img_count, seed=100)\
         .map(preprocess_img, num_parallel_calls=tf.data.AUTOTUNE)\
-        .ragged_batch(BATCH_SIZE, drop_remainder=True)
 
         train_dataset = dataset\
         .take(train_count)\
-        .batch(BATCH_SIZE)\
+        .batch(BATCH_SIZE, drop_remainder=True)\
         .prefetch(buffer_size=tf.data.AUTOTUNE)
 
         test_dataset = dataset\
         .skip(train_count)\
-        .batch(BATCH_SIZE)\
+        .batch(BATCH_SIZE, drop_remainder=True)\
         .prefetch(buffer_size=tf.data.AUTOTUNE)
 
         return (train_dataset, test_dataset)
@@ -247,6 +242,7 @@ class Dataset:
         boxes = []
         classes = []
         img_i = -1
+        preserve_homogeneous_shape = True
 
         for predictions in prediction_batches:
             batch_boxes = predictions["boxes"]
@@ -257,15 +253,16 @@ class Dataset:
                 img_boxes = batch_boxes[i]
                 img_classes = batch_classes[i]
                 
-                filtered_img_boxes = img_boxes[img_boxes != -1]
-                filtered_img_boxes = filtered_img_boxes.reshape(filtered_img_boxes.shape[0] // 4, 4)
-                filtered_img_classes = img_classes[img_classes != -1]
+                if not preserve_homogeneous_shape:
+                    img_boxes = img_boxes[img_boxes != -1]
+                    img_boxes = img_boxes.reshape(img_boxes.shape[0] // 4, 4)
+                    img_classes = img_classes[img_classes != -1]
                 
-                boxes.append(filtered_img_boxes.tolist())
-                classes.append(filtered_img_classes.tolist())
-        
-        boxes = tf.ragged.constant(boxes)
-        classes = tf.ragged.constant(classes)
+                boxes.append(img_boxes.tolist())
+                classes.append(img_classes.tolist())
+
+        boxes = np.array(boxes)
+        classes = np.array(classes)
         labels = {
             "boxes": boxes,
             "classes": classes,

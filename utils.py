@@ -25,9 +25,9 @@ class Predictions(TypedDict):
 class Labels(TypedDict):
     """ Represent boxes and classes for all images in a tf.data.Dataset. """
     # (img, box, 4)
-    boxes: tf.RaggedTensor
+    boxes: np.ndarray
     # (img, class)
-    classes: tf.RaggedTensor
+    classes: np.ndarray
 
 def setup() -> None:
     os.chdir(pathlib.Path(__file__).parent.resolve())
