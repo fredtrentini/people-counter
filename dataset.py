@@ -193,12 +193,12 @@ class Dataset:
         train_dataset = dataset\
         .take(train_count)\
         .batch(BATCH_SIZE, drop_remainder=True)\
-        .prefetch(buffer_size=tf.data.AUTOTUNE)
+        .prefetch(buffer_size=tf.data.AUTOTUNE)\
 
         test_dataset = dataset\
         .skip(train_count)\
         .batch(BATCH_SIZE, drop_remainder=True)\
-        .prefetch(buffer_size=tf.data.AUTOTUNE)
+        .prefetch(buffer_size=tf.data.AUTOTUNE)\
 
         return (train_dataset, test_dataset)
 

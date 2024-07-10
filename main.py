@@ -26,8 +26,8 @@ def main():
     dataset.create_dataset_annotations(pretrained_model_data)
     
     print("\nStep 3/4: Train\n")
-    model = models.get_main_model()
     (train_dataset, test_dataset) = dataset.load_data()
+    model = models.get_main_model()
 
     for layer in model.layers:
         layer.trainable = False

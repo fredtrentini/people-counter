@@ -5,3 +5,4 @@ models
 *.json
 !*/annotation_example.json
 !*/predictions_example.json
+.tmp.driveupload
