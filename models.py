@@ -19,33 +19,31 @@ preprocess_model = keras.Sequential([
 ])
 
 def get_pretrained_model_data() -> ModelData:
+    return _get_yolov8_pascalvoc_model_data()
+
+def get_main_model_data() -> ModelData:
+    return _get_yolov8_pascalvoc_model_data()
+
+def get_model_datas() -> list[ModelData]:
+    return [
+        _get_yolov8_pascalvoc_model_data(),
+    ]
+
+def _get_yolov8_pascalvoc_model_data() -> ModelData:
     return ModelData(
-        _get_yolov8_pascalvoc_model(),
+        keras_cv.models.YOLOV8Detector.from_preset(
+            "yolo_v8_m_pascalvoc",
+            bounding_box_format=BOUNDING_BOX_FORMAT,
+            num_classes=20
+        ),
         preprocess_model,
         PASCALVOC_PERSON_CLASS,
     )
 
-def get_main_model_data() -> ModelData:
-    return ModelData(
-        _get_yolov8_pascalvoc_model(),
-        None,
-        PASCALVOC_PERSON_CLASS,
-    )
-
-def get_model_datas() -> list[ModelData]:
-    return [
-        _get_yolov8_pascalvoc_model(),
-    ]
-
-def _get_yolov8_pascalvoc_model() -> keras.Model:
-    return keras_cv.models.YOLOV8Detector.from_preset(
-        "yolo_v8_m_pascalvoc",
-        bounding_box_format=BOUNDING_BOX_FORMAT,
-        num_classes=20
-    )
-
 def main():
-    model: keras.Model = _get_yolov8_pascalvoc_model()
+    model_data = _get_yolov8_pascalvoc_model_data()
+    model = model_data.model
+
     print(model.name)
     model.summary()
 
