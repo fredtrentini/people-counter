@@ -2,6 +2,7 @@ __pycache__
 data
 dataset
 models
+results
 *.json
 !*/annotation_example.json
 !*/predictions_example.json

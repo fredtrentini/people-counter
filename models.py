@@ -11,22 +11,31 @@ from utils import (
     ModelData
 )
 
+PASCALVOC_PERSON_CLASS = 14
+
 preprocess_model = keras.Sequential([
     keras.layers.Input(shape=(None, None, 3)),
     keras_cv.layers.Resizing(*IMG_RESIZE, pad_to_aspect_ratio=True, bounding_box_format=BOUNDING_BOX_FORMAT),
 ])
 
 def get_pretrained_model_data() -> ModelData:
-    model_data = ModelData(
+    return ModelData(
         _get_yolov8_pascalvoc_model(),
         preprocess_model,
-        14
+        PASCALVOC_PERSON_CLASS,
     )
-    
-    return model_data
 
-def get_main_model() -> keras.Model:
-    return _get_yolov8_pascalvoc_model()
+def get_main_model_data() -> ModelData:
+    return ModelData(
+        _get_yolov8_pascalvoc_model(),
+        None,
+        PASCALVOC_PERSON_CLASS,
+    )
+
+def get_model_datas() -> list[ModelData]:
+    return [
+        _get_yolov8_pascalvoc_model(),
+    ]
 
 def _get_yolov8_pascalvoc_model() -> keras.Model:
     return keras_cv.models.YOLOV8Detector.from_preset(
@@ -37,7 +46,7 @@ def _get_yolov8_pascalvoc_model() -> keras.Model:
 
 def main():
     model: keras.Model = _get_yolov8_pascalvoc_model()
-    print(model)
+    print(model.name)
     model.summary()
 
 if __name__ == "__main__":

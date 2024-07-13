@@ -163,10 +163,10 @@ class Dataset:
     def get_annotations_path() -> str:
         return os.path.join(DATASET_ANNOTATIONS_FOLDER, DATASET_ANNOTATIONS_FILE)
     
-    def load_data(self) -> tuple[tf.data.Dataset, tf.data.Dataset]:
+    def load_data(self, target_class: int) -> tuple[tf.data.Dataset, tf.data.Dataset]:
         img_paths = self.img_paths
         prediction_batches = self.get_prediction_batches()
-        labels = self._parse_prediction_batches(prediction_batches)
+        labels = self._parse_prediction_batches(prediction_batches, target_class)
         
         assert TRAIN_RATIO > 0 and TRAIN_RATIO < 1, "Invalid train ratio percentage"
         TEST_RATIO = 1 - TRAIN_RATIO
@@ -238,7 +238,7 @@ class Dataset:
     def _batch(self, items: list, size: int) -> list[list]:
         return list(list(batch) for batch in itertools.batched(items, size))
 
-    def _parse_prediction_batches(self, prediction_batches: list[Predictions]) -> Labels:
+    def _parse_prediction_batches(self, prediction_batches: list[Predictions], target_class: int) -> Labels:
         boxes = []
         classes = []
         img_i = -1
@@ -247,6 +247,7 @@ class Dataset:
         for predictions in prediction_batches:
             batch_boxes = predictions["boxes"]
             batch_classes = predictions["classes"]
+            batch_classes = np.where(batch_classes == -1, batch_classes, target_class)
 
             for i in range(BATCH_SIZE):
                 img_i += 1

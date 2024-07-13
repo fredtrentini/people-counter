@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 
 import cv2
+import keras
 import tensorflow as tf
 
 from config import (
@@ -25,9 +26,10 @@ def main():
     pretrained_model_data = models.get_pretrained_model_data()
     dataset.create_dataset_annotations(pretrained_model_data)
     
-    print("\nStep 3/4: Train\n")
-    (train_dataset, test_dataset) = dataset.load_data()
-    model = models.get_main_model()
+    print("\nStep 3/4: Train + test\n")
+    model_data = models.get_main_model_data()
+    model: keras.Model = model_data.model
+    (train_dataset, test_dataset) = dataset.load_data(model_data.target_class)
 
     for layer in model.layers:
         layer.trainable = False
@@ -39,8 +41,7 @@ def main():
         jit_compile=False,
     )
 
-    history = model.fit(train_dataset, epochs=5, validation_data=test_dataset)
-    print(history)
+    history = model.fit(train_dataset, epochs=10, validation_data=test_dataset)
     
     exit()
     print("\nStep 4/4: Real time inference\n")
