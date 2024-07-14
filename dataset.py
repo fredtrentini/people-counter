@@ -2,7 +2,6 @@ from __future__ import annotations as _future_annotations
 
 from dataclasses import dataclass, field
 import glob
-import itertools
 import json
 import math
 import os
@@ -236,7 +235,13 @@ class Dataset:
             file.write(json.dumps(annotations, indent=4))
     
     def _batch(self, items: list, size: int) -> list[list]:
-        return list(list(batch) for batch in itertools.batched(items, size))
+        batches = []
+
+        for i in range(0, len(items), size):
+            batch = items[i:i+size]
+            batches.append(batch)
+
+        return batches
 
     def _parse_prediction_batches(self, prediction_batches: list[Predictions], target_class: int) -> Labels:
         boxes = []

@@ -45,8 +45,6 @@ def _get_another_model_data() -> ModelData:
     return ModelData(
         keras_cv.models.YOLOV8Backbone.from_preset(
             "yolo_v8_xs_backbone_coco",
-            bounding_box_format=BOUNDING_BOX_FORMAT,
-            num_classes=20
         ),
         preprocess_model,
         0,
