@@ -24,8 +24,6 @@ def main():
     pretrained_model_data = models.get_pretrained_model_data()
     dataset.create_dataset_annotations(pretrained_model_data)
     
-    model_data = models.get_main_model_data()
-    model: keras.Model = model_data.model
     model_datas = models.get_model_datas()
 
     for n, model_data in enumerate(model_datas, start=1):

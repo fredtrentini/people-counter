@@ -27,6 +27,7 @@ def get_main_model_data() -> ModelData:
 def get_model_datas() -> list[ModelData]:
     return [
         _get_yolov8_pascalvoc_model_data(),
+        _get_another_model_data(),
     ]
 
 def _get_yolov8_pascalvoc_model_data() -> ModelData:
@@ -40,8 +41,20 @@ def _get_yolov8_pascalvoc_model_data() -> ModelData:
         PASCALVOC_PERSON_CLASS,
     )
 
+def _get_another_model_data() -> ModelData:
+    return ModelData(
+        keras_cv.models.YOLOV8Backbone.from_preset(
+            "yolo_v8_xs_backbone_coco",
+            bounding_box_format=BOUNDING_BOX_FORMAT,
+            num_classes=20
+        ),
+        preprocess_model,
+        0,
+    )
+
 def main():
-    model_data = _get_yolov8_pascalvoc_model_data()
+    model_datas = get_model_datas()
+    model_data = model_datas[0]
     model = model_data.model
 
     print(model.name)

@@ -19,7 +19,7 @@ EXIT_KEY = "q"
 # Step 2
 FORCE_DATASET_LABELS_REBUILD = True
 VISUALIZE_LABELED_IMAGE = True
-BATCH_SIZE = 1
+BATCH_SIZE = 4
 CONFIDENCE = 0.3
 IMG_RESIZE = (480, 640)
 PERSON_CLASS = 0
@@ -32,7 +32,7 @@ def main():
 
     model = YOLO("yolov8s.pt")
 
-    video_paths = glob.glob(os.path.join(INPUT_DIR, "**"))
+    video_paths = glob.glob(os.path.join(INPUT_DIR, "**"))[2:]
 
     for video_i, video_path in enumerate(video_paths, start=1):
         print(f"Video {video_i}/{len(video_paths)}")
@@ -44,13 +44,13 @@ def main():
             print(f"Frame {i}/{video_info.total_frames}")
             results: Results = model(frame, imgsz=1280)[0]
             detections = sv.Detections.from_yolov8(results)
-            from IPython import embed
-            embed()
 
             is_person_array = (detections.class_id == PERSON_CLASS) & (detections.confidence >= CONFIDENCE)
             detections.xyxy = detections.xyxy[is_person_array]
             detections.class_id = detections.class_id[is_person_array]
             detections.confidence = detections.confidence[is_person_array]
+            from IPython import embed
+            embed()
 
             box_annotator = sv.BoxAnnotator(thickness=4, text_thickness=4, text_scale=2)
             frame = box_annotator.annotate(scene=frame, detections=detections)
