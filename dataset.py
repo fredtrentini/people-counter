@@ -52,7 +52,7 @@ class Dataset:
                 shutil.rmtree(DATASET_DIR)
         
         assert os.path.exists(INPUT_DIR), "Videos input folder not found"
-        video_paths = glob.glob(os.path.join(INPUT_DIR, "**"))
+        video_paths = sorted(glob.glob(os.path.join(INPUT_DIR, "**")))
         dataset = Dataset(video_paths)
 
         if os.path.exists(DATASET_DIR):
@@ -67,7 +67,7 @@ class Dataset:
                 dataset._extract_imgs(video_path, i)
 
         print("Reading images...")
-        dataset.img_paths = glob.glob(os.path.join(DATASET_DIR, "**", "*.jpg"), recursive=True)
+        dataset.img_paths = sorted(glob.glob(os.path.join(DATASET_DIR, "**", "*.jpg"), recursive=True))
         
         return dataset
 

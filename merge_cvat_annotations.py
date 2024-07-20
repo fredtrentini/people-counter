@@ -1,5 +1,3 @@
-from __future__ import annotations as _future_annotations
-
 import argparse
 import json
 import os
