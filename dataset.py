@@ -1,5 +1,3 @@
-from __future__ import annotations as _future_annotations
-
 from dataclasses import dataclass, field
 import glob
 import json
@@ -46,7 +44,7 @@ class Dataset:
     img_paths: list[str] = field(default_factory=list)
 
     @staticmethod
-    def create_dataset() -> Dataset:
+    def create_dataset():
         if FORCE_DATASET_REBUILD:
             if os.path.exists(DATASET_DIR):
                 shutil.rmtree(DATASET_DIR)
