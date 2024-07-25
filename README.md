@@ -2,7 +2,7 @@
 
 This is a project to make a CNN able to accurately count people in videos.
 
-[Try it out on google colab](https://colab.research.google.com/drive/16Ln-GgEKO7NSem-vQ3kuD53q2VVxl_8_#scrollTo=5IOHlMUmUAPA)
+[Try it out on google colab](https://colab.research.google.com/drive/12H9n7k-PrRxawqukzgTbwYUXutNQpKYx)
 
 ## Steps
 

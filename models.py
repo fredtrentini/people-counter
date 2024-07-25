@@ -25,7 +25,7 @@ def get_main_model_data() -> ModelData:
 def get_model_datas() -> list[ModelData]:
     return [
         _get_yolov8_pascalvoc_model_data(),
-        _get_another_model_data(),
+        # _get_another_model_data(),
     ]
 
 def _get_yolov8_pascalvoc_model_data() -> ModelData:
