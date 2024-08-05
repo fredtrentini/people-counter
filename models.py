@@ -1,6 +1,7 @@
 import keras
 from keras import layers
 import keras_cv
+import tensorflow as tf
 
 from config import (
     BOUNDING_BOX_FORMAT,
@@ -32,7 +33,7 @@ def get_model_datas() -> list[ModelData]:
 def _get_yolov8_pascalvoc_model_data() -> ModelData:
     def prepare_to_train(base_model: keras.Model) -> keras.Model:
         domain_model_layers = [
-            keras.Input(shape=(IMG_RESIZE[0], IMG_RESIZE[1], 3)),
+            # keras.Input(shape=(IMG_RESIZE[0], IMG_RESIZE[1], 3)),
             layers.Conv2D(32, kernel_size=(3, 3), activation='relu', padding='same'),
             layers.Conv2D(32, kernel_size=(3, 3), activation='relu', padding='same'),
             layers.MaxPooling2D(pool_size=(2, 2), strides=2),
@@ -48,18 +49,17 @@ def _get_yolov8_pascalvoc_model_data() -> ModelData:
             layers.Dense(2, activation='softmax')
         ]
 
-        # base_model.compile(
-        #     classification_loss='binary_crossentropy',
-        #     box_loss='ciou',
-        #     optimizer=tf.optimizers.SGD(global_clipnorm=10.0),
-        #     jit_compile=False,
-        # )
-
+        last_layer_threshold = 9
         base_model.trainable = False
-        model = base_model
 
-        for domain_model_layer in domain_model_layers:
-            model = domain_model_layer(model)
+        first_base_layers = base_model.layers[:-last_layer_threshold]
+        last_base_layers = base_model.layers[-last_layer_threshold:]
+
+        x = first_base_layers[-1].output
+        for layer in [*domain_model_layers]:
+            x = layer(x)
+        
+        model = keras.Model(inputs=base_model.input, outputs=x)
 
         model.compile(
             loss='binary_crossentropy',
