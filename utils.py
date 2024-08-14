@@ -13,9 +13,12 @@ class ModelData:
     model: keras.Model
     preprocess_model: keras.Model | None
     target_class: int
-    _prepare_to_train: Callable[[keras.Model], keras.Model]
+    _prepare_to_train: Callable[[keras.Model], keras.Model] | None
 
     def prepare_to_train(self) -> keras.Model:
+        if self._prepare_to_train is None:
+            return self.model
+        
         return self._prepare_to_train(self.model)
 
 class Predictions(TypedDict):
