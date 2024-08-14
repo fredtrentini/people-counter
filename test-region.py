@@ -11,7 +11,7 @@ CONFIDENCE = 0.3
 REGION_POINTS = [(700, 150), (1250, 150), (1250, 0), (700, 0)]
 
 model = YOLO("yolov8s.pt")
-video_path = video_path = glob.glob(os.path.join(config.INPUT_DIR, "**"))[2]
+video_path = video_path = glob.glob(os.path.join(config.VIDEOS_DIR, "**"))[2]
 frame_generator = sv.get_video_frames_generator(video_path)
 
 counter = object_counter.ObjectCounter(

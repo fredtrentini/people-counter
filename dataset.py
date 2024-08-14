@@ -15,7 +15,7 @@ import tensorflow as tf
 
 from coco import Coco
 from config import (
-    INPUT_DIR,
+    VIDEOS_DIR,
     DATASET_DIR,
     DATASET_ANNOTATIONS_FOLDER,
     DATASET_ANNOTATIONS_FILE,
@@ -49,14 +49,14 @@ class Dataset:
             if os.path.exists(DATASET_DIR):
                 shutil.rmtree(DATASET_DIR)
         
-        assert os.path.exists(INPUT_DIR), "Videos input folder not found"
-        video_paths = sorted(glob.glob(os.path.join(INPUT_DIR, "**")))
+        assert os.path.exists(VIDEOS_DIR), "Videos input folder not found"
+        video_paths = sorted(glob.glob(os.path.join(VIDEOS_DIR, "**")))
         dataset = Dataset(video_paths)
 
         if os.path.exists(DATASET_DIR):
             print(f"Dataset already exists, skipping build")
         else:
-            assert len(video_paths) > 0, f"Input folder {INPUT_DIR} is empty"
+            assert len(video_paths) > 0, f"Input folder {VIDEOS_DIR} is empty"
             os.mkdir(DATASET_DIR)
 
             for i, video_path in enumerate(video_paths, start=1):

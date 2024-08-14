@@ -1,4 +1,4 @@
-INPUT_DIR = "data"
+VIDEOS_DIR = "data-videos"
 DATASET_DIR = "dataset"
 DATASET_ANNOTATIONS_FOLDER = "dataset-annotations"
 DATASET_ANNOTATIONS_FILE = "current.json"
