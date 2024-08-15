@@ -3,9 +3,11 @@ import glob
 import json
 import math
 import os
+import random
 import shutil
 from typing import Iterator
 
+import copy
 import cv2
 import imutils
 import keras_cv
@@ -34,6 +36,8 @@ from utils import (
     Predictions,
     Labels,
 )
+
+random_seed = 100
 
 def pad(text: int | str, width: int, fill_char: str = " ") -> str:
     return str(text).rjust(width, fill_char)
@@ -160,7 +164,7 @@ class Dataset:
     def get_annotations_path() -> str:
         return os.path.join(DATASET_ANNOTATIONS_FOLDER, DATASET_ANNOTATIONS_FILE)
     
-    def load_data(self, target_class: int) -> tuple[tf.data.Dataset, tf.data.Dataset]:
+    def load_data_as_keras(self, target_class: int) -> tuple[tf.data.Dataset, tf.data.Dataset]:
         img_paths = self.img_paths
         prediction_batches = self.get_prediction_batches()
         labels = self._parse_prediction_batches(prediction_batches, target_class)
@@ -184,7 +188,7 @@ class Dataset:
 
         dataset = tf.data.Dataset\
         .from_tensor_slices((img_paths, labels))\
-        .shuffle(buffer_size=img_count, seed=100)\
+        .shuffle(buffer_size=img_count, seed=random_seed)\
         .map(preprocess_img, num_parallel_calls=tf.data.AUTOTUNE)\
 
         train_dataset = dataset\
@@ -198,6 +202,80 @@ class Dataset:
         .prefetch(buffer_size=tf.data.AUTOTUNE)\
 
         return (train_dataset, test_dataset)
+    
+    def generate_ultralytics_files(self, target_class: int) -> None:
+        """
+        Idempotently generated file structure:
+
+        data/
+            train/
+                images/
+                    [*img.jpg]
+                labels/
+                    [*img.jpg.txt]
+            test/
+                images/
+                    [*img.jpg]
+                labels/
+                    [*img.jpg.txt]
+        
+        dataset.yaml
+        """
+        if os.path.exists("dataset.yaml"):
+            return
+
+        img_paths = copy.deepcopy(self.img_paths)
+        prediction_batches = self.get_prediction_batches()
+        labels = self._parse_prediction_batches(prediction_batches, target_class)
+        
+        assert TRAIN_RATIO > 0 and TRAIN_RATIO < 1, "Invalid train ratio percentage"
+        TEST_RATIO = 1 - TRAIN_RATIO
+        img_count = len(img_paths)
+        
+        assert (img_count * TRAIN_RATIO) % 1 == 0, f"Expected {TRAIN_RATIO * 100}% of {img_count}"\
+                                                   f" to be an integer, got {img_count * TRAIN_RATIO}"
+        assert (img_count * TEST_RATIO) % 1 == 0, f"Expected {TEST_RATIO * 100}% of {img_count}"\
+                                                  f" to be an integer, got {img_count * TEST_RATIO}"
+        train_count = int(img_count * TRAIN_RATIO)
+        self._shuffle(labels["boxes"], labels["classes"], img_paths)
+
+        train_labels = {k: v.copy() for k, v in labels.items()}
+        train_labels["boxes"] = train_labels["boxes"][:train_count]
+        train_labels["classes"] = train_labels["classes"][:train_count]
+
+        test_labels = {k: v.copy() for k, v in labels.items()}
+        test_labels["boxes"] = test_labels["boxes"][train_count:]
+        test_labels["classes"] = test_labels["classes"][train_count:]
+
+        label_map = {
+            "train": {
+                "images": img_paths[:train_count],
+                "labels": train_labels,
+                "paths": img_paths[:train_count],
+            },
+            "test": {
+                "images": img_paths[train_count:],
+                "labels": test_labels,
+                "paths": img_paths[train_count:],
+            },
+        }
+
+        for folder in ["train", "test"]:
+            for subfolder in ["images", "labels"]:
+                os.makedirs(os.path.join("data", folder, subfolder), exist_ok=True)
+            
+            images = label_map[folder]["images"]
+            labels = label_map[folder]["labels"]
+            paths = label_map[folder]["paths"]
+            
+            for image, path, label in zip(images, labels, paths):
+                filename = os.path.basename(path)
+                shutil.copytree(path, os.path.join("data", folder, "images", filename))
+        
+        from IPython import embed
+        embed()
+        exit()
+        # inspect, split 300 into train/test, generate dataset.yaml
 
     def _extract_imgs(self, input_video_path: str, video_i: int) -> None:
         cap = cv2.VideoCapture(input_video_path)
@@ -273,3 +351,7 @@ class Dataset:
         }
 
         return labels
+    
+    def _shuffle(self, *lists: list) -> None:
+        for list_ in lists:
+            random.Random(random_seed).shuffle(list_)

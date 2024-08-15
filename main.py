@@ -27,7 +27,8 @@ def main():
     print("\nStep 3/4: Train + test\n")
     model_data = models.get_main_model_data()
     model: keras.Model = model_data.model
-    (train_dataset, test_dataset) = dataset.load_data(model_data.target_class)
+    # (train_dataset, test_dataset) = dataset.load_data_as_keras(model_data.target_class)
+    dataset.generate_ultralytics_files(model_data.target_class)
 
     for layer in model.layers:
         layer.trainable = False

@@ -65,14 +65,11 @@ def _get_backbone_coco_model_data() -> ModelData:
     )
 
 def _get_yolov8s_model_data() -> ModelData:
-    def prepare_to_train(base_model: YOLO) -> YOLO:
-        return base_model
-
     return ModelData(
         YOLO("yolov8s.pt"),
         preprocess_model,
         0,
-        prepare_to_train
+        None
     )
 
 def main():
