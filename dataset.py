@@ -3,7 +3,6 @@ import glob
 import json
 import math
 import os
-import random
 import shutil
 from typing import Iterator
 
@@ -30,14 +29,14 @@ from config import (
     IMG_RESIZE,
     PERSON_CLASS,
     TRAIN_RATIO,
+    SEED,
 )
+import ultralytics_utils
 from utils import (
     ModelData,
     Predictions,
     Labels,
 )
-
-random_seed = 100
 
 def pad(text: int | str, width: int, fill_char: str = " ") -> str:
     return str(text).rjust(width, fill_char)
@@ -188,7 +187,7 @@ class Dataset:
 
         dataset = tf.data.Dataset\
         .from_tensor_slices((img_paths, labels))\
-        .shuffle(buffer_size=img_count, seed=random_seed)\
+        .shuffle(buffer_size=img_count, seed=SEED)\
         .map(preprocess_img, num_parallel_calls=tf.data.AUTOTUNE)\
 
         train_dataset = dataset\
@@ -204,23 +203,6 @@ class Dataset:
         return (train_dataset, test_dataset)
     
     def generate_ultralytics_files(self, target_class: int) -> None:
-        """
-        Idempotently generated file structure:
-
-        data/
-            train/
-                images/
-                    [*img.jpg]
-                labels/
-                    [*img.jpg.txt]
-            test/
-                images/
-                    [*img.jpg]
-                labels/
-                    [*img.jpg.txt]
-        
-        dataset.yaml
-        """
         if os.path.exists("dataset.yaml"):
             return
 
@@ -236,46 +218,8 @@ class Dataset:
                                                    f" to be an integer, got {img_count * TRAIN_RATIO}"
         assert (img_count * TEST_RATIO) % 1 == 0, f"Expected {TEST_RATIO * 100}% of {img_count}"\
                                                   f" to be an integer, got {img_count * TEST_RATIO}"
-        train_count = int(img_count * TRAIN_RATIO)
-        self._shuffle(labels["boxes"], labels["classes"], img_paths)
-
-        train_labels = {k: v.copy() for k, v in labels.items()}
-        train_labels["boxes"] = train_labels["boxes"][:train_count]
-        train_labels["classes"] = train_labels["classes"][:train_count]
-
-        test_labels = {k: v.copy() for k, v in labels.items()}
-        test_labels["boxes"] = test_labels["boxes"][train_count:]
-        test_labels["classes"] = test_labels["classes"][train_count:]
-
-        label_map = {
-            "train": {
-                "images": img_paths[:train_count],
-                "labels": train_labels,
-                "paths": img_paths[:train_count],
-            },
-            "test": {
-                "images": img_paths[train_count:],
-                "labels": test_labels,
-                "paths": img_paths[train_count:],
-            },
-        }
-
-        for folder in ["train", "test"]:
-            for subfolder in ["images", "labels"]:
-                os.makedirs(os.path.join("data", folder, subfolder), exist_ok=True)
-            
-            images = label_map[folder]["images"]
-            labels = label_map[folder]["labels"]
-            paths = label_map[folder]["paths"]
-            
-            for image, path, label in zip(images, labels, paths):
-                filename = os.path.basename(path)
-                shutil.copytree(path, os.path.join("data", folder, "images", filename))
         
-        from IPython import embed
-        embed()
-        exit()
-        # inspect, split 300 into train/test, generate dataset.yaml
+        ultralytics_utils.generate_files(img_paths, labels)
 
     def _extract_imgs(self, input_video_path: str, video_i: int) -> None:
         cap = cv2.VideoCapture(input_video_path)
@@ -351,7 +295,3 @@ class Dataset:
         }
 
         return labels
-    
-    def _shuffle(self, *lists: list) -> None:
-        for list_ in lists:
-            random.Random(random_seed).shuffle(list_)

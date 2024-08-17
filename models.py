@@ -21,7 +21,8 @@ def get_pretrained_model_data() -> ModelData:
     return _get_yolov8_pascalvoc_model_data()
 
 def get_main_model_data() -> ModelData:
-    return _get_yolov8_pascalvoc_model_data()
+    # return _get_yolov8_pascalvoc_model_data()
+    return _get_yolov8s_ultralytics_model_data()
 
 def get_model_datas() -> list[ModelData]:
     return [
@@ -64,7 +65,7 @@ def _get_backbone_coco_model_data() -> ModelData:
         None
     )
 
-def _get_yolov8s_model_data() -> ModelData:
+def _get_yolov8s_ultralytics_model_data() -> ModelData:
     return ModelData(
         YOLO("yolov8s.pt"),
         preprocess_model,
@@ -73,7 +74,7 @@ def _get_yolov8s_model_data() -> ModelData:
     )
 
 def main():
-    model_data = _get_yolov8s_model_data()
+    model_data = _get_yolov8s_ultralytics_model_data()
     model = model_data.model
 
     model.summary()
