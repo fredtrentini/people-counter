@@ -219,7 +219,7 @@ class Dataset:
         assert (img_count * TEST_RATIO) % 1 == 0, f"Expected {TEST_RATIO * 100}% of {img_count}"\
                                                   f" to be an integer, got {img_count * TEST_RATIO}"
         
-        ultralytics_utils.generate_files(img_paths, labels)
+        ultralytics_utils.generate_files(img_paths, labels, target_class)
 
     def _extract_imgs(self, input_video_path: str, video_i: int) -> None:
         cap = cv2.VideoCapture(input_video_path)

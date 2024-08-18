@@ -3,6 +3,7 @@ import time
 import cv2
 import keras
 import tensorflow as tf
+from ultralytics import YOLO
 
 from config import (
     EXIT_KEY,
@@ -26,21 +27,10 @@ def main():
     
     print("\nStep 3/4: Train + test\n")
     model_data = models.get_main_model_data()
-    model: keras.Model = model_data.model
-    # (train_dataset, test_dataset) = dataset.load_data_as_keras(model_data.target_class)
+    model: YOLO = model_data.model
+    
     dataset.generate_ultralytics_files(model_data.target_class)
-
-    for layer in model.layers:
-        layer.trainable = False
-
-    model.compile(
-        classification_loss='binary_crossentropy',
-        box_loss='ciou',
-        optimizer=tf.optimizers.SGD(global_clipnorm=10.0),
-        jit_compile=False,
-    )
-
-    history = model.fit(train_dataset, epochs=10, validation_data=test_dataset)
+    # model.train()
     
     exit()
     print("\nStep 4/4: Real time inference\n")
