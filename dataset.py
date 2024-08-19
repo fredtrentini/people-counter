@@ -30,7 +30,6 @@ from config import (
     PERSON_CLASS,
     TRAIN_RATIO,
     SEED,
-    YOLO_DATASET_NAME,
 )
 import ultralytics_utils
 from utils import (
@@ -204,7 +203,7 @@ class Dataset:
         return (train_dataset, test_dataset)
     
     def generate_ultralytics_files(self, target_class: int) -> None:
-        if os.path.exists(os.path.join(YOLO_DATASET_NAME, "dataset.yaml")):
+        if os.path.exists("data"):
             return
 
         img_paths = copy.deepcopy(self.img_paths)

@@ -10,7 +10,6 @@ from config import (
     BATCH_SIZE,
     EXIT_KEY,
     IMG_RESIZE,
-    YOLO_DATASET_NAME,
 )
 from dataset import Dataset
 import models
@@ -33,13 +32,13 @@ def main():
     model_data = models.get_main_model_data()
     model: YOLO = model_data.model
     
-    dataset.generate_ultralytics_files(model_data.target_class)
     settings.update({
         "runs_dir": "runs",
-        "datasets_dir": YOLO_DATASET_NAME,
+        "datasets_dir": ".",
     })
+    dataset.generate_ultralytics_files(model_data.target_class)
     model.train(
-        data=os.path.join(YOLO_DATASET_NAME, "dataset.yaml"),
+        data=os.path.join("data", "dataset.yaml"),
         epochs=10,
         patience=8,
         batch=BATCH_SIZE,
