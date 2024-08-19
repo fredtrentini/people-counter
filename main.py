@@ -1,12 +1,16 @@
+import os
 import time
 
 import cv2
 import keras
 import tensorflow as tf
-from ultralytics import YOLO
+from ultralytics import YOLO, settings
 
 from config import (
+    BATCH_SIZE,
     EXIT_KEY,
+    IMG_RESIZE,
+    YOLO_DATASET_NAME,
 )
 from dataset import Dataset
 import models
@@ -30,7 +34,36 @@ def main():
     model: YOLO = model_data.model
     
     dataset.generate_ultralytics_files(model_data.target_class)
-    # model.train()
+    settings.update({
+        "runs_dir": "runs",
+        "datasets_dir": YOLO_DATASET_NAME,
+    })
+    model.train(
+        data=os.path.join(YOLO_DATASET_NAME, "dataset.yaml"),
+        epochs=10,
+        patience=8,
+        batch=BATCH_SIZE,
+        imgsz=IMG_RESIZE[1],
+        workers=8,
+        pretrained=True,
+        resume=False,
+        single_cls=False,
+        box=7.5,
+        cls=0.5,
+        dfl=1.5,
+    )
+    results = model.val(
+        imgsz=IMG_RESIZE[1],
+        batch=BATCH_SIZE,
+        conf=0.001,
+        iou=0.7,
+        save_json=False,
+        save_hybrid=False,
+        split="val"
+    )
+
+    from IPython import embed
+    embed()
     
     exit()
     print("\nStep 4/4: Real time inference\n")
@@ -42,13 +75,13 @@ def main():
         start = time.time()
 
         _, img = camera.read()
-        # TODO: Predict img with domain model
+
         
         end = time.time()
         ms_spent = int((end - start) * 1000)
         print(f"Frame {count}: {ms_spent}ms")
         
-        # TODO: Plot image with highlighted objects in non-blocking way (pure cv2 probably)
+
 
         if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
             break
