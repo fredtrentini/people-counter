@@ -3,6 +3,7 @@ utfpr
 data
 data-videos
 dataset
+dataset.yaml
 models
 runs
 results
