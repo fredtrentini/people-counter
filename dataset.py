@@ -203,7 +203,7 @@ class Dataset:
         return (train_dataset, test_dataset)
     
     def generate_ultralytics_files(self, target_class: int) -> None:
-        if os.path.exists("data"):
+        if os.path.exists("datasets"):
             return
 
         img_paths = copy.deepcopy(self.img_paths)

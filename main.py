@@ -2,9 +2,8 @@ import os
 import time
 
 import cv2
-import keras
 import tensorflow as tf
-from ultralytics import YOLO, settings
+from ultralytics import YOLO
 
 from config import (
     BATCH_SIZE,
@@ -32,13 +31,9 @@ def main():
     model_data = models.get_main_model_data()
     model: YOLO = model_data.model
     
-    settings.update({
-        "runs_dir": "runs",
-        "datasets_dir": ".",
-    })
     dataset.generate_ultralytics_files(model_data.target_class)
     model.train(
-        data=os.path.join("data", "dataset.yaml"),
+        data="dataset.yaml",
         epochs=10,
         patience=8,
         batch=BATCH_SIZE,

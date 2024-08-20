@@ -16,18 +16,19 @@ def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> 
     """
     Generated file structure:
 
-    data/
-        dataset.yaml
-        train/
-            images/
-                [*img.jpg]
-            labels/
-                [*img.jpg.txt]
-        test/
-            images/
-                [*img.jpg]
-            labels/
-                [*img.jpg.txt]
+    datasets/
+        data/
+            train/
+                images/
+                    [*img.jpg]
+                labels/
+                    [*img.jpg.txt]
+            test/
+                images/
+                    [*img.jpg]
+                labels/
+                    [*img.jpg.txt]
+    dataset.yaml
     """
     img_paths = np.array(img_paths_)
     img_count = len(img_paths)
@@ -55,15 +56,15 @@ def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> 
     }
 
     for folder in ["train", "test"]:
-        os.makedirs(os.path.join("data", folder, "images"), exist_ok=True)
-        os.makedirs(os.path.join("data", folder, "labels"), exist_ok=True)
+        os.makedirs(os.path.join("datasets", "data", folder, "images"), exist_ok=True)
+        os.makedirs(os.path.join("datasets", "data", folder, "labels"), exist_ok=True)
         
         images = label_map[folder]["images"]
         labels = label_map[folder]["labels"]
         
         for i, image in enumerate(images):
             image_src_filename = os.path.basename(image)
-            image_dst_filename = os.path.join("data", folder, "images", image_src_filename)
+            image_dst_filename = os.path.join("datasets", "data", folder, "images", image_src_filename)
             label_filename = f"{image_dst_filename}.txt".replace("images", "labels", 1)
             shutil.copyfile(image, image_dst_filename)
             
@@ -82,7 +83,7 @@ def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> 
             with open(label_filename, "w") as file:
                 file.write("\n".join(label_lines))
     
-    with open(os.path.join("data", "dataset.yaml"), "w") as file:
+    with open("dataset.yaml", "w") as file:
         lines = [
             f"path: data",
             "train: train",
