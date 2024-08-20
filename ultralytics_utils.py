@@ -23,7 +23,7 @@ def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> 
                     [*img.jpg]
                 labels/
                     [*img.jpg.txt]
-            test/
+            val/
                 images/
                     [*img.jpg]
                 labels/
@@ -40,22 +40,22 @@ def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> 
     train_labels["boxes"] = train_labels["boxes"][:train_count]
     train_labels["classes"] = train_labels["classes"][:train_count]
 
-    test_labels = {k: v.copy() for k, v in labels.items()}
-    test_labels["boxes"] = test_labels["boxes"][train_count:]
-    test_labels["classes"] = test_labels["classes"][train_count:]
+    val_labels = {k: v.copy() for k, v in labels.items()}
+    val_labels["boxes"] = val_labels["boxes"][train_count:]
+    val_labels["classes"] = val_labels["classes"][train_count:]
 
     label_map = {
         "train": {
             "images": img_paths[:train_count],
             "labels": train_labels,
         },
-        "test": {
+        "val": {
             "images": img_paths[train_count:],
-            "labels": test_labels,
+            "labels": val_labels,
         },
     }
 
-    for folder in ["train", "test"]:
+    for folder in ["train", "val"]:
         os.makedirs(os.path.join("datasets", "data", folder, "images"), exist_ok=True)
         os.makedirs(os.path.join("datasets", "data", folder, "labels"), exist_ok=True)
         
@@ -87,7 +87,7 @@ def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> 
         lines = [
             f"path: data",
             "train: train",
-            "val: test",
+            "val: val",
             "",
             "names:",
             f"  {target_class}: person",
