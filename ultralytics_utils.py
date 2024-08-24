@@ -22,12 +22,12 @@ def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> 
                 images/
                     [*img.jpg]
                 labels/
-                    [*img.jpg.txt]
+                    [*img.txt]
             val/
                 images/
                     [*img.jpg]
                 labels/
-                    [*img.jpg.txt]
+                    [*img.txt]
     dataset.yaml
     """
     img_paths = np.array(img_paths_)
@@ -65,7 +65,7 @@ def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> 
         for i, image in enumerate(images):
             image_src_filename = os.path.basename(image)
             image_dst_filename = os.path.join("datasets", "data", folder, "images", image_src_filename)
-            label_filename = f"{image_dst_filename}.txt".replace("images", "labels", 1)
+            label_filename = image_dst_filename.removesuffix(".jpg").replace("images", "labels", 1) + ".txt"
             shutil.copyfile(image, image_dst_filename)
             
             boxes = labels["boxes"][i]
