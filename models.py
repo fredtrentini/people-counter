@@ -1,12 +1,11 @@
 import keras
-from keras import layers
 import keras_cv
-import tensorflow as tf
 from ultralytics import YOLO
 
 from config import (
     BOUNDING_BOX_FORMAT,
     IMG_RESIZE,
+    MAIN_MODEL_PATH,
 )
 from utils import (
     ModelData
@@ -20,15 +19,11 @@ preprocess_model = keras.Sequential([
 def get_pretrained_model_data() -> ModelData:
     return _get_yolov8_pascalvoc_model_data()
 
-def get_main_model_data() -> ModelData:
-    # return _get_yolov8_pascalvoc_model_data()
+def get_model_data_to_train() -> ModelData:
     return _get_yolov8s_ultralytics_model_data()
 
-def get_model_datas() -> list[ModelData]:
-    return [
-        _get_yolov8_pascalvoc_model_data(),
-        # _get_backbone_coco_model_data(),
-    ]
+def get_main_model_data() -> ModelData:
+    return _get_yolov8s_ultralytics_model_data_trained()
 
 def _get_yolov8_pascalvoc_model_data() -> ModelData:
     def prepare_to_train(model: keras.Model) -> keras.Model:
@@ -55,19 +50,17 @@ def _get_yolov8_pascalvoc_model_data() -> ModelData:
         prepare_to_train
     )
 
-def _get_backbone_coco_model_data() -> ModelData:
+def _get_yolov8s_ultralytics_model_data() -> ModelData:
     return ModelData(
-        keras_cv.models.YOLOV8Backbone.from_preset(
-            "yolo_v8_xs_backbone_coco",
-        ),
+        YOLO("yolov8s.pt"),
         preprocess_model,
         0,
         None
     )
 
-def _get_yolov8s_ultralytics_model_data() -> ModelData:
+def _get_yolov8s_ultralytics_model_data_trained() -> ModelData:
     return ModelData(
-        YOLO("yolov8s.pt"),
+        YOLO(MAIN_MODEL_PATH),
         preprocess_model,
         0,
         None

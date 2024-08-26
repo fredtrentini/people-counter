@@ -19,3 +19,4 @@ PERSON_CLASS = 1
 # Step 3
 TRAIN_RATIO = 0.75
 SEED = 100
+MAIN_MODEL_PATH = "./main_model.onnx"

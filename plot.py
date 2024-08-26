@@ -21,8 +21,19 @@ def main():
         required=False, 
         help="Get annotations from given .json file"
     )
+    parser.add_argument(
+        "-model", 
+        type=str, 
+        required=False, 
+        choices="pascalvoc yolov8s yolov8s_trained".split(),
+        help="Model to generate annotations in runtime"
+    )
     args = parser.parse_args()
     annotations_filename = args.file
+    model_arg = args.model
+
+    if annotations_filename is not None and model_arg is not None:
+        raise RuntimeError("-file and -model can't be used simultaneously")
 
     if annotations_filename is not None:
         annotations_filename = os.path.join(DATASET_ANNOTATIONS_FOLDER, annotations_filename)
@@ -33,7 +44,22 @@ def main():
     dataset.create_dataset_annotations(model_data)
     prediction_batches = dataset.get_prediction_batches(annotations_filename)
 
-    for img_batch, predictions in zip(dataset.iterate_img_batches(model_data), prediction_batches):
+    if model_arg is None:
+        for img_batch, predictions in zip(dataset.iterate_img_batches(model_data), prediction_batches):
+            dataset.visualize(img_batch, predictions)
+        
+        return
+    
+    model_name_to_model_data_function_map = {
+        "pascalvoc": models._get_yolov8_pascalvoc_model_data,
+        "yolov8s": models._get_yolov8s_ultralytics_model_data,
+        "yolov8s_trained": models._get_yolov8s_ultralytics_model_data_trained,
+    }
+    
+    model_data = model_name_to_model_data_function_map[model_arg]()
+
+    for img_batch in dataset.iterate_img_batches(model_data):
+        predictions = dataset.predict_img_batch(model_data, img_batch)
         dataset.visualize(img_batch, predictions)
 
 if __name__ == "__main__":

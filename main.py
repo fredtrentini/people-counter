@@ -1,4 +1,3 @@
-import os
 import time
 
 import cv2
@@ -6,9 +5,7 @@ import tensorflow as tf
 from ultralytics import YOLO
 
 from config import (
-    BATCH_SIZE,
     EXIT_KEY,
-    IMG_RESIZE,
 )
 from dataset import Dataset
 import models
@@ -16,51 +13,15 @@ from utils import (
     setup,
 )
 
+CONFIDENCE = 0.3
+
 def main():
     setup()
     print(f"Devices: {[device.device_type for device in tf.config.list_physical_devices()]}\n")
+    print("\nStep 4/4: Real time inference\n")
 
-    print("Step 1/4: Prepare dataset\n")
-    dataset = Dataset.create_dataset()
-    
-    print("\nStep 2/4: Build dataset annotations\n")
-    pretrained_model_data = models.get_pretrained_model_data()
-    dataset.create_dataset_annotations(pretrained_model_data)
-    
-    print("\nStep 3/4: Train + test\n")
     model_data = models.get_main_model_data()
     model: YOLO = model_data.model
-    
-    dataset.generate_ultralytics_files(model_data.target_class)
-    model.train(
-        data="dataset.yaml",
-        epochs=10,
-        patience=8,
-        batch=BATCH_SIZE,
-        imgsz=IMG_RESIZE[1],
-        workers=8,
-        pretrained=True,
-        resume=False,
-        single_cls=False,
-        box=7.5,
-        cls=0.5,
-        dfl=1.5,
-    )
-    results = model.val(
-        imgsz=IMG_RESIZE[1],
-        batch=BATCH_SIZE,
-        conf=0.001,
-        iou=0.7,
-        save_json=False,
-        save_hybrid=False,
-        split="val"
-    )
-
-    from IPython import embed
-    embed()
-    
-    exit()
-    print("\nStep 4/4: Real time inference\n")
     count = 0
     camera = cv2.VideoCapture(0)
 
@@ -69,13 +30,18 @@ def main():
         start = time.time()
 
         _, img = camera.read()
-
         
         end = time.time()
         ms_spent = int((end - start) * 1000)
         print(f"Frame {count}: {ms_spent}ms")
-        
 
+        is_person_array = (results.boxes.cls == model_data.target_class) & (results.boxes.conf >= CONFIDENCE)
+        results.boxes = results.boxes[is_person_array]
+
+        box_annotator = sv.BoxAnnotator()
+        frame = box_annotator.annotate(scene=frame, detections=sv.Detections.from_ultralytics(results))
+
+        cv2.imshow("Frame", frame)
 
         if cv2.waitKey(1) & 0xFF == ord(EXIT_KEY):
             break
