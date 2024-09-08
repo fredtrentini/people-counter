@@ -52,7 +52,7 @@ def _get_yolov8_pascalvoc_model_data() -> ModelData:
 
 def _get_yolov8s_ultralytics_model_data() -> ModelData:
     return ModelData(
-        YOLO("yolov8s.pt"),
+        YOLO("yolov8s.pt", task="detect"),
         preprocess_model,
         0,
         None
@@ -60,7 +60,7 @@ def _get_yolov8s_ultralytics_model_data() -> ModelData:
 
 def _get_yolov8s_ultralytics_model_data_trained() -> ModelData:
     return ModelData(
-        YOLO(MAIN_MODEL_PATH),
+        YOLO(MAIN_MODEL_PATH, task="detect"),
         preprocess_model,
         0,
         None

@@ -33,15 +33,16 @@ def main():
     model.train(
         data="dataset.yaml",
         epochs=10,
+        freeze=[*range(10)],
         patience=8,
         batch=BATCH_SIZE,
         imgsz=IMG_RESIZE[1],
         workers=8,
         pretrained=True,
         resume=False,
-        single_cls=False,
+        single_cls=True,
         box=7.5,
-        cls=0.5,
+        cls=0.2,
         dfl=1.5,
     )
     results = model.val(
