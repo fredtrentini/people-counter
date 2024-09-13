@@ -13,6 +13,12 @@ from utils import setup
 def main():
     setup()
     print(f"Devices: {[device.device_type for device in tf.config.list_physical_devices()]}\n")
+    
+    model_name_to_model_data_function_map = {
+        "pascalvoc": models._get_yolov8_pascalvoc_model_data,
+        "yolov8s": models._get_yolov8s_ultralytics_model_data,
+        "yolov8s_trained": models._get_yolov8s_ultralytics_model_data_trained,
+    }
 
     parser = argparse.ArgumentParser(description="Visualize annotations")
     parser.add_argument(
@@ -25,7 +31,7 @@ def main():
         "-model", 
         type=str, 
         required=False, 
-        choices="pascalvoc yolov8s yolov8s_trained".split(),
+        choices=[*model_name_to_model_data_function_map.keys()],
         help="Model to generate annotations in runtime"
     )
     args = parser.parse_args()
@@ -49,12 +55,6 @@ def main():
             dataset.visualize(img_batch, predictions)
         
         return
-    
-    model_name_to_model_data_function_map = {
-        "pascalvoc": models._get_yolov8_pascalvoc_model_data,
-        "yolov8s": models._get_yolov8s_ultralytics_model_data,
-        "yolov8s_trained": models._get_yolov8s_ultralytics_model_data_trained,
-    }
     
     model_data = model_name_to_model_data_function_map[model_arg]()
 
