@@ -38,8 +38,10 @@ pip install -r requirements.txt
   - About the data source for the annotations:
     - By default, annotations come from model predictions file
     - If `-file` argument is used, parse a given file as cvat annotations instead
-- `merge_cvat_annotations.py`: When importing annotations from cvat, a lot of information is either lost or overwritten such as category_id, info, categories, etc, so this script solves this problem by inputting 2 annotation files (the one which got exported and the one who just got imported) and correctly merging the information
-  - Input two relative filenames, which are expected to be the file with the correct metadata and the file with the correct labels
+- `merge_cvat_annotations.py`: When importing annotations from cvat, a lot of information is either lost or overwritten such as category_id, info, categories, etc, so this script solves this problem by inputting 2 annotation files and correctly merging the information
+  - Input two relative filenames, which are expected to be:
+    - File with the correct metadata (auto generated previously by `plot.py`)
+    - File with the correct labels (which just got manually optimized and imported on cvat)
   - Write new merged file to the current file path (overwrites existing file)
 - `main.py`: Main project file which does the following
   - Generate dataset and annotations if they don't exist
@@ -51,4 +53,7 @@ pip install -r requirements.txt
 - First of all download some video files and move them to `data-videos` folder.
 - Run `plot.py` to build dataset, build dataset annotations and generate initial predictions, as well as visualize those predictions.
 - Create a task on [cvat](https://app.cvat.ai) and import the annotations to visualize the predicted bounding boxes and manually optimize them as much as needed.
-- Download the updated annotations and run `merge_cvat_annotations.py` passing the original annotations and the downloaded annotations as arguments.
+- Download the updated annotations as "COCO 1.0" and run `merge_cvat_annotations.py` passing the original annotations and the downloaded annotations as arguments.
+- Use `train.py` to train the pretrained model (make sure `datasets` folder doesn't exist before running, so that it is recreated based on the updated labels).
+- Run `python plot.py -model yolov8s_trained` to test the trained model against the labels it was trained on.
+- Run `main.py` to test the trained model against the current video device.

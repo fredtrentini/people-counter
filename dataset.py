@@ -100,7 +100,6 @@ class Dataset:
                 if tf.is_tensor(img_batch):
                     img_batch = img_batch.numpy()
 
-            assert img_batch.shape == (BATCH_SIZE, *IMG_RESIZE, 3), f"Expected image shape {(BATCH_SIZE, *IMG_RESIZE, 3)}, got {img_batch.shape}"
             yield img_batch
 
     def get_prediction_batches(self, filename: str | None = None) -> list[Predictions]:
@@ -150,23 +149,26 @@ class Dataset:
         return filtered_predictions
     
     def _predict_img_batch_ultralytics(self, model_data: ModelData, img_batch: np.ndarray) -> Predictions:
-        results = model_data.model.predict(img_batch, imgsz=IMG_RESIZE[1])
         batch_boxes = []
         batch_classes = []
 
-        for result in results:
-            boxes = result.boxes.xyxy.cpu().numpy()
-            classes = result.boxes.cls.cpu().numpy()
-            confidences = result.boxes.conf.cpu().numpy()
+        for img in img_batch:
+            results = model_data.model.predict(img, imgsz=IMG_RESIZE[1])[0]
+
+            boxes = self._pad_to_max_detections(results.boxes.xywh.cpu().numpy())
+            classes = self._pad_to_max_detections(results.boxes.cls.cpu().numpy())
+            confidences = self._pad_to_max_detections(results.boxes.conf.cpu().numpy())
 
             class_mask = (classes == model_data.target_class) & (confidences >= CONFIDENCE)
             box_mask = np.expand_dims(class_mask, axis=-1).repeat(4, axis=-1)
 
             filtered_boxes = np.full_like(boxes, -1, dtype=float)
             filtered_classes = np.full_like(classes, -1, dtype=int)
-
+            filtered_confidences = np.full_like(confidences, -1, dtype=float)
+            
             filtered_boxes[box_mask] = boxes[box_mask]
             filtered_classes[class_mask] = classes[class_mask]
+            filtered_confidences[class_mask] = confidences[class_mask]
             filtered_classes = np.where(filtered_classes == -1, filtered_classes, PERSON_CLASS)
 
             batch_boxes.append(filtered_boxes)
@@ -302,6 +304,18 @@ class Dataset:
             batches.append(batch)
 
         return batches
+    
+    def _pad_to_max_detections(self, arr: np.ndarray, max_detections: int = 100, pad_value: float = -1) -> np.ndarray:
+        current_len = arr.shape[0]
+        
+        if current_len >= max_detections:
+            return arr[:max_detections]
+        
+        pad_shape = (max_detections, *arr.shape[1:])
+        padded_array = np.full(pad_shape, pad_value, dtype=arr.dtype)
+        padded_array[:current_len] = arr
+
+        return padded_array
 
     def _parse_prediction_batches(self, prediction_batches: list[Predictions], target_class: int) -> Labels:
         boxes = []

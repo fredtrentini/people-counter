@@ -32,7 +32,7 @@ def main():
     dataset.generate_ultralytics_files(model_data.target_class)
     model.train(
         data="dataset.yaml",
-        epochs=10,
+        epochs=20,
         freeze=[*range(10)],
         patience=8,
         batch=BATCH_SIZE,
