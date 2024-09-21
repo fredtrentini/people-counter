@@ -34,6 +34,7 @@ def main():
         choices=[*model_name_to_model_data_function_map.keys()],
         help="Model to generate annotations in runtime"
     )
+    
     args = parser.parse_args()
     annotations_filename = args.file
     model_arg = args.model
@@ -64,3 +65,15 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+TODO: CLI option to change from plot mode to benchmark mode:
+
+Rather than interrupting for each batch to plot, disable plotting/interruption and for each batch image
+compare the correct bounding box count to the predicted bounding box count, printing the
+difference of those values (example: if correct count is 4 and given count is 3, print -1).
+
+At the end of this process, it must inform:
+- Correct prediction percentage
+- Total count difference
+"""

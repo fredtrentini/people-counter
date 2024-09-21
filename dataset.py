@@ -246,7 +246,7 @@ class Dataset:
     
     def generate_ultralytics_files(self, target_class: int) -> None:
         if os.path.exists("datasets"):
-            return
+            shutil.rmtree("datasets")
 
         img_paths = copy.deepcopy(self.img_paths)
         prediction_batches = self.get_prediction_batches()

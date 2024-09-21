@@ -7,6 +7,7 @@ from config import (
     BATCH_SIZE,
     MAIN_MODEL_PATH,
     IMG_RESIZE,
+    CONFIDENCE,
 )
 from dataset import Dataset
 import models
@@ -40,16 +41,16 @@ def main():
         workers=8,
         pretrained=True,
         resume=False,
-        single_cls=True,
-        box=7.5,
-        cls=0.2,
-        dfl=1.5,
+        single_cls=False,
+        box=5,
+        cls=0.3,
+        dfl=1,
     )
     results = model.val(
         imgsz=IMG_RESIZE[1],
         batch=BATCH_SIZE,
-        conf=0.001,
-        iou=0.7,
+        conf=CONFIDENCE,
+        iou=0.5,
         save_json=False,
         save_hybrid=False,
         split="val"
