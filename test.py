@@ -45,7 +45,7 @@ def run_benchmark_mode(dataset: Dataset, model_data: ModelData, correct_predicti
             correct_person_count += img_correct_person_count
             person_count += img_person_count
 
-            if person_count == img_correct_person_count:
+            if img_person_count == img_correct_person_count:
                 success_count += 1
             
             print(f"[{img_batch_i * 4 + i + 1}/{img_count}] | {img_person_count}/{img_correct_person_count}")

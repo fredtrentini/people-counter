@@ -33,8 +33,8 @@ def main():
     dataset.generate_ultralytics_files(model_data.target_class)
     model.train(
         data="dataset.yaml",
-        epochs=20,
-        freeze=[*range(10)],
+        epochs=10,
+        freeze=[*range(5)],
         patience=8,
         batch=BATCH_SIZE,
         imgsz=IMG_RESIZE[1],
