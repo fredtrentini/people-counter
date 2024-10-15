@@ -32,21 +32,16 @@ pip install -r requirements.txt
 
 ## Scripts
 
-- `test.py`: Visualize current existing annotations
+- `test.py`: Visualize/benchmark current existing annotations
   - Generate dataset and annotations if they don't exist
-  - Create desktop windows to visualize the annotations
-  - About the data source for the annotations:
-    - By default, annotations come from model predictions file
-    - If `-file` argument is used, parse a given file as cvat annotations instead
+  - Provide feedback on how efficient the selected model is for predicting people
 - `merge_cvat_annotations.py`: When importing annotations from cvat, a lot of information is either lost or overwritten such as category_id, info, categories, etc, so this script solves this problem by inputting 2 annotation files and correctly merging the information
   - Input two relative filenames, which are expected to be:
     - File with the correct metadata (auto generated previously by `test.py`)
     - File with the correct labels (which just got manually optimized and imported on cvat)
   - Write new merged file to the current file path (overwrites existing file)
 - `main.py`: Main project file which does the following
-  - Generate dataset and annotations if they don't exist
-  - Train the pretrained model (TODO)
-  - Test the application in real-time using the current video device (TODO)
+  - Test the application in real-time using the current video device
 
 ## Practical overview (How to use those scripts)
 
