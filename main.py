@@ -19,7 +19,6 @@ def main():
     print(f"Devices: {[device.device_type for device in tf.config.list_physical_devices()]}\n")
     print("Step 4/4: Real time inference\n")
 
-    # model_data = models.get_model_data_to_train()
     model_data = models.get_main_model_data()
     model: YOLO = model_data.model
     camera = cv2.VideoCapture(0)

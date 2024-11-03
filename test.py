@@ -1,9 +1,11 @@
 import argparse
 import os
 
+import keras
 import tensorflow as tf
 
 from config import (
+    BATCH_SIZE,
     DATASET_ANNOTATIONS_FOLDER
 )
 from dataset import Dataset
@@ -13,6 +15,8 @@ from utils import (
     Predictions,
     ModelData,
 )
+
+KERAS_TRAINED_MODEL_NAME = "yolov8_detector.keras"
 
 def run_plot_mode(dataset: Dataset, model_data: ModelData, correct_prediction_batches: list[Predictions]) -> None:
     if model_data is None:
@@ -48,7 +52,7 @@ def run_benchmark_mode(dataset: Dataset, model_data: ModelData, correct_predicti
             if img_person_count == img_correct_person_count:
                 success_count += 1
             
-            print(f"[{img_batch_i * 4 + i + 1}/{img_count}] | {img_person_count}/{img_correct_person_count}")
+            print(f"[{img_batch_i * BATCH_SIZE + i + 1}/{img_count}] | {img_person_count}/{img_correct_person_count}")
     
     print()
     print(f"Total person count: {person_count}/{correct_person_count}")
@@ -57,11 +61,15 @@ def run_benchmark_mode(dataset: Dataset, model_data: ModelData, correct_predicti
 def main():
     setup()
     print(f"Devices: {[device.device_type for device in tf.config.list_physical_devices()]}\n")
+
+    model_data_pascalvoc = models._get_yolov8_pascalvoc_model_data()
+    model_data_pascalvoc.model = keras.models.load_model(f"./results/{KERAS_TRAINED_MODEL_NAME}")
     
     model_name_to_model_data_function_map = {
-        "pascalvoc": models._get_yolov8_pascalvoc_model_data,
-        "yolov8s": models._get_yolov8s_ultralytics_model_data,
-        "yolov8s_trained": models._get_yolov8s_ultralytics_model_data_trained,
+        "pascalvoc": models._get_yolov8_pascalvoc_model_data(),
+        "ultralytics": models._get_yolov8s_ultralytics_model_data(),
+        "pascalvoc_trained": model_data_pascalvoc,
+        "ultralytics_trained": models._get_yolov8s_ultralytics_model_data_trained(),
     }
 
     parser = argparse.ArgumentParser(description="Visualize annotations")
