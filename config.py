@@ -19,4 +19,5 @@ PERSON_CLASS = 0
 # Step 3
 TRAIN_RATIO = 0.75
 SEED = 100
-MAIN_MODEL_PATH = "./main_model.onnx"
+MAIN_MODEL_PATH_PASCALVOC = "./results/yolov8_detector.keras"
+MAIN_MODEL_PATH_ULTRALYTICS = "./main_model.onnx"

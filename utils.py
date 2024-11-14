@@ -6,20 +6,13 @@ import pathlib
 import keras
 import numpy as np
 
-from typing import Callable, TypedDict
+from typing import TypedDict
 
 @dataclass
 class ModelData:
     model: keras.Model
     preprocess_model: keras.Model | None
     target_class: int
-    _prepare_to_train: Callable[[keras.Model], keras.Model] | None
-
-    def prepare_to_train(self) -> keras.Model:
-        if self._prepare_to_train is None:
-            return self.model
-        
-        return self._prepare_to_train(self.model)
 
 class Predictions(TypedDict):
     """ Represent boxes and classes for a batch of images, thus having first dimension of length BATCH_SIZE. """

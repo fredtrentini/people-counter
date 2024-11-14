@@ -12,7 +12,7 @@ from utils import (
     setup,
 )
 
-CONFIDENCE = 0.3
+CONFIDENCE = 0.5
 
 def main():
     setup()

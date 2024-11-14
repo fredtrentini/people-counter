@@ -7,7 +7,7 @@ from ultralytics.solutions import object_counter
 import supervision as sv
 
 PERSON_CLASS = 0
-CONFIDENCE = 0.3
+CONFIDENCE = 0.5
 REGION_POINTS = [(700, 150), (1250, 150), (1250, 0), (700, 0)]
 
 model = YOLO("yolov8s.pt")

@@ -6,7 +6,8 @@ import tensorflow as tf
 
 from config import (
     BATCH_SIZE,
-    DATASET_ANNOTATIONS_FOLDER
+    DATASET_ANNOTATIONS_FOLDER,
+    MAIN_MODEL_PATH_PASCALVOC,
 )
 from dataset import Dataset
 import models
@@ -15,8 +16,6 @@ from utils import (
     Predictions,
     ModelData,
 )
-
-KERAS_TRAINED_MODEL_NAME = "yolov8_detector.keras"
 
 def run_plot_mode(dataset: Dataset, model_data: ModelData, correct_prediction_batches: list[Predictions]) -> None:
     if model_data is None:
@@ -63,7 +62,7 @@ def main():
     print(f"Devices: {[device.device_type for device in tf.config.list_physical_devices()]}\n")
 
     model_data_pascalvoc = models._get_yolov8_pascalvoc_model_data()
-    model_data_pascalvoc.model = keras.models.load_model(f"./results/{KERAS_TRAINED_MODEL_NAME}")
+    model_data_pascalvoc.model = keras.models.load_model(MAIN_MODEL_PATH_PASCALVOC)
     
     model_name_to_model_data_function_map = {
         "pascalvoc": models._get_yolov8_pascalvoc_model_data(),
@@ -72,7 +71,7 @@ def main():
         "ultralytics_trained": models._get_yolov8s_ultralytics_model_data_trained(),
     }
 
-    parser = argparse.ArgumentParser(description="Visualize annotations")
+    parser = argparse.ArgumentParser(description="Visualize results")
     parser.add_argument(
         "-file", 
         type=str, 
