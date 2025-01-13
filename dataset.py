@@ -44,6 +44,8 @@ def pad(text: int | str, width: int, fill_char: str = " ") -> str:
 
 @dataclass
 class Dataset:
+    train_indexes: list[int]
+    test_indexes: list[int]
     video_paths: list[str]
     img_paths: list[str] = field(default_factory=list)
 
@@ -55,7 +57,14 @@ class Dataset:
         
         assert os.path.exists(VIDEOS_DIR), "Videos input folder not found"
         video_paths = sorted(glob.glob(os.path.join(VIDEOS_DIR, "**")))
-        dataset = Dataset(video_paths)
+
+        np.random.seed(SEED)
+        img_count = FRAMES_PER_VIDEO * len(video_paths)
+        indexes = np.random.permutation(img_count)
+        train_count = int(img_count * TRAIN_RATIO)
+        train_indexes = sorted(indexes[:train_count].tolist())
+        test_indexes = sorted(indexes[train_count:].tolist())
+        dataset = Dataset(train_indexes, test_indexes, video_paths)
 
         if os.path.exists(DATASET_DIR):
             print(f"Dataset already exists, skipping build")
@@ -86,8 +95,13 @@ class Dataset:
             print(f"Image batches to annotate: {math.ceil(len(self.img_paths) / BATCH_SIZE)} ({len(self.img_paths)} images)")
             self._generate_dataset_annotations(model_data)
     
-    def iterate_img_batches(self, model_data: ModelData) -> Iterator[np.ndarray]:
-        img_filename_chunks = self._batch(self.img_paths, BATCH_SIZE)
+    def iterate_img_batches(self, model_data: ModelData, test_only: bool = False) -> Iterator[np.ndarray]:
+        if test_only:
+            img_paths = [img_path for i, img_path in enumerate(self.img_paths) if i in self.test_indexes]
+        else:
+            img_paths = self.img_paths
+
+        img_filename_chunks = self._batch(img_paths, BATCH_SIZE)
 
         for batch_id, img_paths_chunk in enumerate(img_filename_chunks, start=1):
             print(f"Iterating batch {batch_id}/{len(img_filename_chunks)}...")
@@ -264,7 +278,8 @@ class Dataset:
         assert (img_count * TEST_RATIO) % 1 == 0, f"Expected {TEST_RATIO * 100}% of {img_count}"\
                                                   f" to be an integer, got {img_count * TEST_RATIO}"
         
-        ultralytics_utils.generate_files(img_paths, labels, target_class)
+        indexes_to_shuffle = self.train_indexes + self.test_indexes
+        ultralytics_utils.generate_files(img_paths, indexes_to_shuffle, labels, target_class)
 
     def _extract_imgs(self, input_video_path: str, video_i: int) -> None:
         cap = cv2.VideoCapture(input_video_path)

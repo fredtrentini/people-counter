@@ -6,13 +6,12 @@ import numpy as np
 from config import (
     IMG_RESIZE,
     TRAIN_RATIO,
-    SEED,
 )
 from utils import (
     Labels,
 )
 
-def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> None:
+def generate_files(img_paths_: list[str], indexes_to_shuffle: list[int], labels: Labels, target_class: int) -> None:
     """
     Generated file structure:
 
@@ -34,7 +33,7 @@ def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> 
     img_count = len(img_paths)
     train_count = int(img_count * TRAIN_RATIO)
     labels = {k: v.copy() for k, v in labels.items()}
-    _shuffle_deterministically(img_paths, labels["boxes"], labels["classes"])
+    _shuffle_deterministically(indexes_to_shuffle, img_paths, labels["boxes"], labels["classes"])
 
     train_labels = {k: v.copy() for k, v in labels.items()}
     train_labels["boxes"] = train_labels["boxes"][:train_count]
@@ -95,10 +94,8 @@ def generate_files(img_paths_: list[str], labels: Labels, target_class: int) -> 
 
         file.write("\n".join(lines))
 
-def _shuffle_deterministically(*arrays: np.ndarray) -> None:
-    np.random.seed(SEED)
+def _shuffle_deterministically(indexes: list[int], *arrays: np.ndarray) -> None:
     length = len(arrays[0])
-    indexes = np.random.permutation(length)
 
     for i, array in enumerate(arrays):
         assert len(array) == length, f"Expected numpy array {i} to have length {length}, got {len(array)}"

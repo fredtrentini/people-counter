@@ -2,12 +2,15 @@ import argparse
 import os
 
 import keras
+import numpy as np
+from sklearn.metrics import mean_absolute_error
 import tensorflow as tf
 
 from config import (
     BATCH_SIZE,
     DATASET_ANNOTATIONS_FOLDER,
     MAIN_MODEL_PATH_PASCALVOC,
+    TRAIN_RATIO,
 )
 from dataset import Dataset
 import models
@@ -17,14 +20,20 @@ from utils import (
     ModelData,
 )
 
+def normalized_mean_absolute_error(y_true, y_pred):
+    mae = mean_absolute_error(y_true, y_pred)
+    y_true_mean = np.mean(np.abs(y_true))
+
+    return mae / y_true_mean
+
 def run_plot_mode(dataset: Dataset, model_data: ModelData, correct_prediction_batches: list[Predictions]) -> None:
     if model_data is None:
-        for img_batch, predictions in zip(dataset.iterate_img_batches(model_data), correct_prediction_batches):
+        for img_batch, predictions in zip(dataset.iterate_img_batches(model_data, test_only=True), correct_prediction_batches):
             dataset.visualize(img_batch, predictions)
         
         return
 
-    for img_batch in dataset.iterate_img_batches(model_data):
+    for img_batch in dataset.iterate_img_batches(model_data, test_only=True):
         predictions = dataset.predict_img_batch(model_data, img_batch)
         dataset.visualize(img_batch, predictions)
 
@@ -32,30 +41,47 @@ def run_benchmark_mode(dataset: Dataset, model_data: ModelData, correct_predicti
     person_count = 0
     success_count = 0
     correct_person_count = 0
+    tested_img_count = 0
     img_count = len(correct_prediction_batches) * len(correct_prediction_batches[0]["classes"])
+    img_person_counts = []
+    img_correct_person_counts = []
+    
+    TEST_RATIO = 1 - TRAIN_RATIO
+    test_img_count = int(img_count * TEST_RATIO)
 
-    for img_batch_i, img_batch in enumerate(dataset.iterate_img_batches(model_data)):
+    for batch_i, img_batch in enumerate(dataset.iterate_img_batches(model_data)):
         predictions = dataset.predict_img_batch(model_data, img_batch)
         img_batch_classes = predictions["classes"]
 
-        for i, img in enumerate(img_batch):
-            img_classes = img_batch_classes[i]
+        for batch_img_i, img in enumerate(img_batch):
+            shallow_img_i = batch_i * BATCH_SIZE + batch_img_i
+            
+            if shallow_img_i not in dataset.test_indexes:
+                continue
+
+            img_classes = img_batch_classes[batch_img_i]
             img_person_count = len(img_classes[img_classes != -1])
             
-            correct_img_classes = correct_prediction_batches[img_batch_i]["classes"][i]
+            correct_img_classes = correct_prediction_batches[batch_i]["classes"][batch_img_i]
             img_correct_person_count = len(correct_img_classes[correct_img_classes != -1])
 
             correct_person_count += img_correct_person_count
             person_count += img_person_count
 
+            img_person_counts.append(img_person_count)
+            img_correct_person_counts.append(img_correct_person_count)
+
             if img_person_count == img_correct_person_count:
                 success_count += 1
             
-            print(f"[{img_batch_i * BATCH_SIZE + i + 1}/{img_count}] | {img_person_count}/{img_correct_person_count}")
+            tested_img_count += 1
+            print(f"[{tested_img_count}/{test_img_count}] | {img_person_count}/{img_correct_person_count}")
     
     print()
     print(f"Total person count: {person_count}/{correct_person_count}")
-    print(f"Accuracy: {round((success_count / img_count) * 100, 2)}%")
+    print(f"Accuracy: {round((success_count / test_img_count) * 100, 2)}%")
+    print(f"MAE: {round(mean_absolute_error(img_correct_person_counts, img_person_counts), 3)}")
+    print(f"MAEN: {round(normalized_mean_absolute_error(img_correct_person_counts, img_person_counts), 3)}")
 
 def main():
     setup()
@@ -65,10 +91,10 @@ def main():
     model_data_pascalvoc.model = keras.models.load_model(MAIN_MODEL_PATH_PASCALVOC)
     
     model_name_to_model_data_function_map = {
-        "pascalvoc": models._get_yolov8_pascalvoc_model_data(),
-        "ultralytics": models._get_yolov8s_ultralytics_model_data(),
+        "pascalvoc": models._get_yolov8_pascalvoc_model_data,
+        "ultralytics": models._get_yolov8s_ultralytics_model_data,
         "pascalvoc_trained": model_data_pascalvoc,
-        "ultralytics_trained": models._get_yolov8s_ultralytics_model_data_trained(),
+        "ultralytics_trained": models._get_yolov8s_ultralytics_model_data_trained,
     }
 
     parser = argparse.ArgumentParser(description="Visualize results")
