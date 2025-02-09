@@ -5,6 +5,7 @@ from ultralytics import YOLO
 from config import (
     BOUNDING_BOX_FORMAT,
     IMG_RESIZE,
+    MAIN_MODEL_PATH_PASCALVOC,
     MAIN_MODEL_PATH_ULTRALYTICS,
 )
 from utils import (
@@ -39,6 +40,12 @@ def _get_yolov8s_ultralytics_model_data() -> ModelData:
         preprocess_model,
         0,
     )
+
+def _get_yolov8s_pascalvoc_model_data_trained() -> ModelData:
+    model_data = _get_yolov8_pascalvoc_model_data()
+    model_data.model = keras.models.load_model(MAIN_MODEL_PATH_PASCALVOC)
+
+    return model_data
 
 def _get_yolov8s_ultralytics_model_data_trained() -> ModelData:
     return ModelData(

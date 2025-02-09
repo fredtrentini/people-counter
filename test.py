@@ -1,7 +1,6 @@
 import argparse
 import os
 
-import keras
 import numpy as np
 from sklearn.metrics import mean_absolute_error
 import tensorflow as tf
@@ -9,7 +8,6 @@ import tensorflow as tf
 from config import (
     BATCH_SIZE,
     DATASET_ANNOTATIONS_FOLDER,
-    MAIN_MODEL_PATH_PASCALVOC,
     TRAIN_RATIO,
 )
 from dataset import Dataset
@@ -86,14 +84,11 @@ def run_benchmark_mode(dataset: Dataset, model_data: ModelData, correct_predicti
 def main():
     setup()
     print(f"Devices: {[device.device_type for device in tf.config.list_physical_devices()]}\n")
-
-    model_data_pascalvoc = models._get_yolov8_pascalvoc_model_data()
-    model_data_pascalvoc.model = keras.models.load_model(MAIN_MODEL_PATH_PASCALVOC)
     
     model_name_to_model_data_function_map = {
         "pascalvoc": models._get_yolov8_pascalvoc_model_data,
         "ultralytics": models._get_yolov8s_ultralytics_model_data,
-        "pascalvoc_trained": model_data_pascalvoc,
+        "pascalvoc_trained": models._get_yolov8s_pascalvoc_model_data_trained,
         "ultralytics_trained": models._get_yolov8s_ultralytics_model_data_trained,
     }
 
